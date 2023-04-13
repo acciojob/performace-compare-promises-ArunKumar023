@@ -12,28 +12,32 @@ const apiUrls = [
   "https://jsonplaceholder.typicode.com/todos/10",
 ];
 
-// Function to measure the time taken for a promise to resolve
-async function measureTime(promise) {
-  const start = performance.now();
-  await promise;
-  const end = performance.now();
-  return end - start;
+// Function to fetch data using Promise.all
+function fetchDataWithPromiseAll() {
+  const startTime = performance.now();
+
+  Promise.all(apiUrls.map(url => fetch(url)))
+    .then(responses => Promise.all(responses.map(response => response.json())))
+    .then(data => {
+      const endTime = performance.now();
+      const timeTaken = endTime - startTime;
+      document.getElementById("output-all").innerHTML = timeTaken.toFixed(2);
+    })
+    .catch(error => console.log(error));
 }
 
-// Fetch data from all APIs using Promise.all() and measure the time taken
-Promise.all(apiUrls.map(url => fetch(url)))
-  .then(responses => {
-    const totalTime = responses.reduce((acc, response) => {
-      return acc + measureTime(response.json());
-    }, 0);
-    document.getElementById("output-all").textContent = totalTime.toFixed(2);
-  })
-  .catch(error => console.error(error));
+// Function to fetch data using Promise.any
+function fetchDataWithPromiseAny() {
+  const startTime = performance.now();
 
-// Fetch data from any API using Promise.any() and measure the time taken
-Promise.any(apiUrls.map(url => fetch(url).then(response => response.json())))
-  .then(data => measureTime(Promise.resolve(data)))
-  .then(time => {
-    document.getElementById("output-any").textContent = time.toFixed(2);
-  })
-  .catch(error => console.error(error));
+  Promise.any(apiUrls.map(url => fetch(url).then(response => response.json())))
+    .then(data => {
+      const endTime = performance.now();
+      const timeTaken = endTime - startTime;
+      document.getElementById("output-any").innerHTML = timeTaken.toFixed(2);
+    })
+    .catch(error => console.log(error));
+}
+
+fetchDataWithPromiseAll();
+fetchDataWithPromiseAny();
